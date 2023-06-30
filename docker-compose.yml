@@ -1,63 +1,92 @@
-# Basic authorization with SASL (Plaintext to Kafka and DigestMD5 to Zookeeper)
----
-version: '2'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.4.1
+    image: confluentinc/cp-zookeeper:latest.arm64
+    # ZooKeeper is designed to "fail-fast", so it is important to allow it to
+    # restart automatically.
+    restart: unless-stopped
+    hostname: zookeeper
+    container_name: zookeeper
     ports:
-      - '31000:31000'
+      - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+      ZOO_SERVERS: server.1=zookeeper:2888:3888
       KAFKA_OPTS: "-Dzookeeper.authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider -Djava.security.auth.login.config=/opt/security/zookeeper-server.jaas"
-      KAFKA_JMX_HOSTNAME: "localhost"
-      KAFKA_JMX_PORT: 31000
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
     volumes:
       - ./security:/opt/security
 
   kafka:
-    image: confluentinc/cp-server:5.4.1
-    ports:
-      - '9092:9092'
-      - '9093:9093'
-      - '31001:31001'
+    image: confluentinc/cp-server:latest.arm64
+    hostname: kafka
+    container_name: kafka
     depends_on:
       - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_INTER_BROKER_LISTENER_NAME: EXTERNAL
-      KAFKA_LISTENERS: "EXTERNAL://kafka:9092,INTERNAL://localhost:9093"
-      KAFKA_ADVERTISED_LISTENERS: "EXTERNAL://kafka:9092,INTERNAL://localhost:9093"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "EXTERNAL:SASL_PLAINTEXT,INTERNAL:SASL_PLAINTEXT"
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
-#      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
-      KAFKA_LISTENER_NAME_EXTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
-      KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
-#      KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: "KafkaServer {org.apache.kafka.common.security.plain.PlainLoginModule required username='admin' password='admin-secret' user_admin='admin-secret';} KafkaClient {org.apache.kafka.common.security.plain.PlainLoginModule required username='admin' password='admin-secret';};"
-#      KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: "KafkaServer {org.apache.kafka.common.security.plain.PlainLoginModule required username='admin' password='admin-secret' user_admin='admin-secret';} KafkaClient {org.apache.kafka.common.security.plain.PlainLoginModule required username='admin' password='admin-secret';};"
-#      KAFKA_ZOOKEEPER_SASL_CLIENTCONFIG: "org.apache.zookeeper.server.auth.DigestLoginModule required username='admin' password='admin-secret';};"
-
-      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
-      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.auth.SimpleAclAuthorizer
-#      KAFKA_AUTHORIZER_CLASS_NAME: io.confluent.kafka.security.authorizer.ConfluentServerAuthorizer
-#      KAFKA_CONFLUENT_AUTHORIZER_ACCESS_RULE_PROVIDERS: "ZK_ACL,CONFLUENT"
-      KAFKA_SUPER_USERS: "User:admin"
-      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "false"
-      KAFKA_ZOOKEEPER_SET_ACL: "true"
-      KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/security/kafka-server.jaas"
-      KAFKA_JMX_HOSTNAME: "localhost"
-      KAFKA_JMX_PORT: 31001
-      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
-      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: localhost:9093
-      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
-      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
-      CONFLUENT_METRICS_REPORTER_SECURITY_PROTOCOL: SASL_PLAINTEXT
-      CONFLUENT_METRICS_REPORTER_SASL_MECHANISM: PLAIN
-      CONFLUENT_METRICS_REPORTER_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required username='admin' password='admin-secret';"
-
-      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
     volumes:
       - ./security:/opt/security
+    environment:
+      KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/security/kafka-server.jaas"
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO,kafka.authorizer.logger=INFO"
+      KAFKA_ZOOKEEPER_SET_ACL: "true"
+
+      KAFKA_BROKER_ID: 1
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+
+      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN #, SASL, SCRAM-SHA-256 #, OAUTHBEARER
+
+      KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
+      # KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: |
+      #   org.apache.kafka.common.security.plain.PlainLoginModule required \
+      #   username="admin" \
+      #   password="admin-secret" \
+      #   user_admin="admin-secret";
+
+      KAFKA_LISTENER_NAME_EXTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
+      # KAFKA_LISTENER_NAME_EXTERNAL_PLAIN_SASL_JAAS_CONFIG: |
+      #   org.apache.kafka.common.security.plain.PlainLoginModule required \
+      #   username="admin" \
+      #   password="admin-secret" \
+      #   user_admin="admin-secret";
+
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      # these came from the old docker/docker-compose.kafka.yml
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka:29092
+      CONFLUENT_METRICS_REPORTER_SASL_MECHANISM: PLAIN
+      CONFLUENT_METRICS_REPORTER_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      # CONFLUENT_METRICS_REPORTER_SASL_JAAS_CONFIG: |
+      #   org.apache.kafka.common.security.plain.PlainLoginModule required \
+      #   username="admin" \
+      #   password="admin-secret" \
+      #   user_admin="admin-secret";
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: "true"
+      CONFLUENT_METRICS_REPORTER_TOPIC_RETENTION_MS: 86400000
+      CONFLUENT_SUPPORT_CUSTOMER_ID: "anonymous"
+    deploy:
+      resources:
+        limits:
+          memory: 2048M
