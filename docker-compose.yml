@@ -1,6 +1,6 @@
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest.arm64
+    image: confluentinc/cp-zookeeper:latest
     # ZooKeeper is designed to "fail-fast", so it is important to allow it to
     # restart automatically.
     restart: unless-stopped
@@ -21,7 +21,7 @@ services:
       - ./security:/opt/security
 
   kafka:
-    image: confluentinc/cp-server:latest.arm64
+    image: confluentinc/cp-server:latest
     hostname: kafka
     container_name: kafka
     depends_on:
@@ -30,6 +30,7 @@ services:
       - "9092:9092"
     volumes:
       - ./security:/opt/security
+      - ./client-properties:/home/appuser/client-properties
     environment:
       KAFKA_OPTS: "-Djava.security.auth.login.config=/opt/security/kafka-server.jaas"
       KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer

@@ -3,14 +3,18 @@
 The objective of this repo is to allow the testing of authorization of topics and the behavior of client
 when being authorized / not authorized by the broker.
 
-## Environment startup
+## Requirements
+
+Recent/latest version of docker and docker-compose
+
+## Startup 
 
 The environment deploys 1 Zookeeper instance and 1 Kafka instance, to activate it, it is needed to have Docker
 installed (it uses docker-compose).
 
 To start the environment run:
 
-`docker-compose up -d`
+`docker-compose up` (add -d to background it)
 
 To stop the environment use:
 
@@ -50,6 +54,77 @@ It is required to have Kafka tools installed to be able to use this environment.
 Another very handy tool is kafkacat that could be conveniently installed by doing:
 
 `brew install kafkacat`
+
+
+### Create a topic and apply ACLs
+
+Run the following command to execute the `create_topic.sh` against kafka:
+
+```shell
+docker exec -i kafka /bin/bash - < create_topic.sh
+```
+
+Output: 
+
+```text
+WARNING: Due to limitations in metric names, topics with a period ('.') or underscore ('_') could collide. To avoid issues it is best to use either, but not both.
+Created topic first_topic.
+Adding ACLs for resource `ResourcePattern(resourceType=TOPIC, name=first_topic, patternType=LITERAL)`:
+        (principal=User:producer, host=*, operation=WRITE, permissionType=ALLOW)
+        (principal=User:producer, host=*, operation=DESCRIBE, permissionType=ALLOW)
+        (principal=User:producer, host=*, operation=CREATE, permissionType=ALLOW)
+
+Current ACLs for resource `ResourcePattern(resourceType=TOPIC, name=first_topic, patternType=LITERAL)`:
+        (principal=User:producer, host=*, operation=WRITE, permissionType=ALLOW)
+        (principal=User:producer, host=*, operation=CREATE, permissionType=ALLOW)
+        (principal=User:producer, host=*, operation=DESCRIBE, permissionType=ALLOW)
+
+Adding ACLs for resource `ResourcePattern(resourceType=TOPIC, name=first_topic, patternType=LITERAL)`:
+        (principal=User:consumer, host=*, operation=READ, permissionType=ALLOW)
+        (principal=User:consumer, host=*, operation=DESCRIBE, permissionType=ALLOW)
+
+Adding ACLs for resource `ResourcePattern(resourceType=GROUP, name=*, patternType=LITERAL)`:
+        (principal=User:consumer, host=*, operation=READ, permissionType=ALLOW)
+
+Current ACLs for resource `ResourcePattern(resourceType=TOPIC, name=first_topic, patternType=LITERAL)`:
+        (principal=User:producer, host=*, operation=CREATE, permissionType=ALLOW)
+        (principal=User:producer, host=*, operation=DESCRIBE, permissionType=ALLOW)
+        (principal=User:consumer, host=*, operation=DESCRIBE, permissionType=ALLOW)
+        (principal=User:producer, host=*, operation=WRITE, permissionType=ALLOW)
+        (principal=User:consumer, host=*, operation=READ, permissionType=ALLOW)
+
+Current ACLs for resource `ResourcePattern(resourceType=GROUP, name=*, patternType=LITERAL)`:
+        (principal=User:consumer, host=*, operation=READ, permissionType=ALLOW)
+```
+
+### Test kafka commands
+
+Confirm you can execute `kafka-topics` and `kafka-acls` commands.
+
+```shell
+docker exec -it kafka /bin/bash -  < test_setup.sh 
+```
+
+Output:
+```
+List topics ...
+__consumer_offsets
+_confluent-command
+_confluent-metrics
+_confluent-telemetry-metrics
+_confluent_balancer_api_state
+first_topic
+List acls ...
+Current ACLs for resource `ResourcePattern(resourceType=TOPIC, name=first_topic, patternType=LITERAL)`:
+        (principal=User:producer, host=*, operation=CREATE, permissionType=ALLOW)
+        (principal=User:producer, host=*, operation=DESCRIBE, permissionType=ALLOW)
+        (principal=User:consumer, host=*, operation=DESCRIBE, permissionType=ALLOW)
+        (principal=User:producer, host=*, operation=WRITE, permissionType=ALLOW)
+        (principal=User:consumer, host=*, operation=READ, permissionType=ALLOW)
+
+Current ACLs for resource `ResourcePattern(resourceType=GROUP, name=*, patternType=LITERAL)`:
+        (principal=User:consumer, host=*, operation=READ, permissionType=ALLOW)
+```
 
 ### Producing to the broker
 
@@ -138,4 +213,5 @@ The commands below are executed from the directory where this repo was cloned (d
 
 ### Kafka Java app
 
-### Spring Boot app
+#
+
