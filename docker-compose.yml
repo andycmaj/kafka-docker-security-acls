@@ -23,7 +23,7 @@ services:
   kafka:
     image: confluentinc/cp-server:latest
     #hostname: kafka
-    #container_name: kafka
+    container_name: kafka
     depends_on:
       - zookeeper
     ports:
@@ -65,15 +65,15 @@ services:
 
       #KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
       # these came from the old docker/docker-compose.kafka.yml
-#      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-#      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
 
-#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-#      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-#      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
-#      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
-#      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-#      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 #      KAFKA_JMX_PORT: 9101
 #      KAFKA_JMX_HOSTNAME: localhost
 #      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka:29092
