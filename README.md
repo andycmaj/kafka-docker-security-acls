@@ -5,12 +5,27 @@ when being authorized / not authorized by the broker.
 
 ## Requirements
 
-Recent/latest version of docker and docker-compose
+- Recent/latest version of docker and docker-compose
+- Maven
+- JDK >= 17J
 
-## Startup 
+## Executing JUnit tests in Test Containers
 
-The environment deploys 1 Zookeeper instance and 1 Kafka instance, to activate it, it is needed to have Docker
-installed (it uses docker-compose).
+This project contains an exampple of starting kaka + zookeeper in a docker-compose Test Container and running tests to:
+
+- Create a topic
+- Apply ACL to the topic
+- Confirm topic & ACL were created
+
+Run this test with:
+
+```shell
+mvn test
+```
+
+## Docker Startup 
+
+This project can also be used to test a Kafka + Zookeeper in docker. 
 
 To start the environment run:
 
