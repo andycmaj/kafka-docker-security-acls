@@ -147,8 +147,9 @@ Once the tools are installed, it is possible to produce to the topic by running:
 
 `kafka-console-producer --broker-list localhost:19092 --producer.config client-properties/producer.properties --topic first_topic`
 
-> The command above assumes that the topic first\_topic was created and the ACLs for producing were assigned.
-> To perform this action just run the script `topic\_create.sh`
+The command above assumes that the topic first\_topic was created and the ACLs for producing were assigned.
+
+To perform this action just run the script `topic_create.sh`
 
 ### Consuming from the broker
 
