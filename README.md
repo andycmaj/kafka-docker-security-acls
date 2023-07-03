@@ -7,7 +7,7 @@ when being authorized / not authorized by the broker.
 
 - Recent/latest version of docker and docker-compose
 - Maven
-- JDK >= 17J
+- JDK >= 17
 
 ## Executing JUnit tests in Test Containers
 
