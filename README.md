@@ -11,7 +11,7 @@ when being authorized / not authorized by the broker.
 
 ## Executing JUnit tests in Test Containers
 
-This project contains an exampple of starting kaka + zookeeper in a docker-compose Test Container and running tests to:
+This project contains an example of starting kaka + zookeeper in a docker-compose Test Container and running tests to:
 
 - Create a topic
 - Apply ACL to the topic
