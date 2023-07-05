@@ -1,7 +1,6 @@
-# kafka-docker-security-acls
+# Kafka, Zookeepe and ACLs 
 
-The objective of this repo is to allow the testing of authorization of topics and the behavior of client
-when being authorized / not authorized by the broker.
+The objective of this repo is to allow the testing of authorization of topics and the behavior of client when being authorized / not authorized by the broker.
 
 ## Requirements
 
