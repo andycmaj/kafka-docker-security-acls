@@ -28,7 +28,9 @@ public class AppTest {
 
             var client = this.createKafkaAdminClient();
             var newTopic = new NewTopic("Hello.world", 1, (short) 1);
+            System.out.println("Creating topics - BEGIN");
             var result = client.createTopics(Collections.singletonList(newTopic)).values();
+            System.out.println("Creating topics - COMPLETE");
             assertTrue(result.size() > 0);
             System.out.println("Checking topics - BEGIN");
             String gotTopic = client.listTopics().names().get().iterator().next();
@@ -53,7 +55,7 @@ public class AppTest {
 
     private Admin createKafkaAdminClient() {
         Properties props = new Properties();
-        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:19092");
+        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(AdminClientConfig.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
         props.put("sasl.mechanism", "PLAIN");
         props.put("sasl.jaas.config",
