@@ -27,7 +27,7 @@ public class Acl {
         PatternType.LITERAL);
 
     String customerPrinciple = "User:producer";
-    String customerHost = "localhost:9092";
+    String customerHost = "localhost:9093";
 
     AccessControlEntry writeAccess = new AccessControlEntry(
         customerPrinciple,

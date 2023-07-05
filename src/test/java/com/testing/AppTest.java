@@ -55,7 +55,7 @@ public class AppTest {
 
     private Admin createKafkaAdminClient() {
         Properties props = new Properties();
-        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093");
         props.put(AdminClientConfig.SECURITY_PROTOCOL_CONFIG, "SASL_PLAINTEXT");
         props.put("sasl.mechanism", "PLAIN");
         props.put("sasl.jaas.config",
