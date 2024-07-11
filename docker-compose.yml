@@ -3,31 +3,31 @@ services:
     image: confluentinc/cp-zookeeper:latest
     # ZooKeeper is designed to "fail-fast", so it is important to allow it to
     # restart automatically.
-    restart: unless-stopped
-    hostname: zookeeper
-    container_name: zookeeper
-    ports:
-      - "2181:2181"
+    #restart: unless-stopped
+    #hostname: zookeeper
+    #container_name: zookeeper
+    #ports:
+    #  - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
       ZOO_SERVERS: server.1=zookeeper:2888:3888
       KAFKA_OPTS: "-Dzookeeper.authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider -Djava.security.auth.login.config=/opt/security/zookeeper-server.jaas"
-    deploy:
-      resources:
-        limits:
-          memory: 2048M
+    #    deploy:
+    #      resources:
+    #        limits:
+    #          memory: 2048M
     volumes:
       - ./security:/opt/security
 
   kafka:
     image: confluentinc/cp-server:latest
-    hostname: kafka
-    container_name: kafka
+    #hostname: kafka
+    #container_name: kafka
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"
+      - "9093:9093"
     volumes:
       - ./security:/opt/security
       - ./client-properties:/home/appuser/client-properties
@@ -45,7 +45,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
 
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9093
 
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN #, SASL, SCRAM-SHA-256 #, OAUTHBEARER
@@ -64,7 +64,7 @@ services:
       #   password="admin-secret" \
       #   user_admin="admin-secret";
 
-      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      #KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
       # these came from the old docker/docker-compose.kafka.yml
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_DELETE_TOPIC_ENABLE: "true"
@@ -75,21 +75,21 @@ services:
       KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_JMX_PORT: 9101
-      KAFKA_JMX_HOSTNAME: localhost
-      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka:29092
-      CONFLUENT_METRICS_REPORTER_SASL_MECHANISM: PLAIN
-      CONFLUENT_METRICS_REPORTER_SECURITY_PROTOCOL: SASL_PLAINTEXT
-      # CONFLUENT_METRICS_REPORTER_SASL_JAAS_CONFIG: |
-      #   org.apache.kafka.common.security.plain.PlainLoginModule required \
-      #   username="admin" \
-      #   password="admin-secret" \
-      #   user_admin="admin-secret";
-      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
-      CONFLUENT_METRICS_ENABLE: "true"
-      CONFLUENT_METRICS_REPORTER_TOPIC_RETENTION_MS: 86400000
-      CONFLUENT_SUPPORT_CUSTOMER_ID: "anonymous"
-    deploy:
-      resources:
-        limits:
-          memory: 2048M
+#      KAFKA_JMX_PORT: 9101
+#      KAFKA_JMX_HOSTNAME: localhost
+#      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: kafka:29092
+#      CONFLUENT_METRICS_REPORTER_SASL_MECHANISM: PLAIN
+#      CONFLUENT_METRICS_REPORTER_SECURITY_PROTOCOL: SASL_PLAINTEXT
+#      # CONFLUENT_METRICS_REPORTER_SASL_JAAS_CONFIG: |
+#      #   org.apache.kafka.common.security.plain.PlainLoginModule required \
+#      #   username="admin" \
+#      #   password="admin-secret" \
+#      #   user_admin="admin-secret";
+#      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+#      CONFLUENT_METRICS_ENABLE: "true"
+#      CONFLUENT_METRICS_REPORTER_TOPIC_RETENTION_MS: 86400000
+#      CONFLUENT_SUPPORT_CUSTOMER_ID: "anonymous"
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 2048M
